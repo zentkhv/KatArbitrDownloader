@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Отчёт по документам дела</title>
+<style>
+  :root {
+    --bg: #f3f4f8;
+    --card: #ffffff;
+    --border: #e4e6ef;
+    --text: #1f2430;
+    --muted: #6b7280;
+    --accent: #4654d6;
+    --accent-dark: #3a46b8;
+    --accent-bg: #eef0fc;
+    --danger: #d64550;
+    --success: #1f9d55;
+    --success-bg: rgba(31,157,85,0.12);
+    --warn: #c98a12;
+    --warn-bg: rgba(201,138,18,0.12);
+    --radius: 12px;
+    --shadow: 0 1px 2px rgba(20,20,43,0.04), 0 4px 16px rgba(20,20,43,0.06);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14161f;
+      --card: #1c1f2b;
+      --border: #2a2e3d;
+      --text: #e7e9f3;
+      --muted: #9299ab;
+      --accent: #7c88f0;
+      --accent-dark: #93a0ff;
+      --accent-bg: #242a46;
+      --danger: #e2727a;
+      --success: #43c47b;
+      --success-bg: rgba(67,196,123,0.14);
+      --warn: #e0a83f;
+      --warn-bg: rgba(224,168,63,0.14);
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 6px 20px rgba(0,0,0,0.35);
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Segoe UI", system-ui, Roboto, sans-serif;
+    background: var(--bg); color: var(--text); margin: 0;
+    padding: 2rem clamp(1rem, 3vw, 2.5rem) 4rem;
+  }
+  .page { max-width: 1200px; margin: 0 auto; }
+  header { margin-bottom: 1.25rem; display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 1rem; }
+  header h1 { font-size: 1.4rem; margin: 0 0 0.25rem; }
+  header p { margin: 0; color: var(--muted); font-size: 0.86rem; word-break: break-all; }
+
+  .btn {
+    font-size: 0.86rem; font-weight: 600; padding: 0.55rem 1rem; border-radius: 8px;
+    border: 1px solid transparent; cursor: pointer; text-decoration: none; display: inline-flex; gap: 0.4rem;
+    background: var(--accent); color: white;
+  }
+  .btn:hover { background: var(--accent-dark); }
+
+  .summary { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.25rem; }
+  .stat {
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 0.65rem 1rem; box-shadow: var(--shadow); min-width: 140px;
+  }
+  .stat .label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  .stat .value { font-size: 1.25rem; font-weight: 700; margin-top: 0.15rem; }
+
+  .toolbar { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-bottom: 1rem; align-items: center; }
+  .toolbar input[type=text] {
+    flex: 1; min-width: 200px; padding: 0.5rem 0.7rem; border: 1px solid var(--border);
+    border-radius: 8px; background: var(--card); color: var(--text); font-size: 0.88rem;
+  }
+  .toolbar button {
+    font-size: 0.82rem; font-weight: 600; padding: 0.4rem 0.8rem; border-radius: 999px;
+    border: 1px solid var(--border); background: var(--card); color: var(--muted); cursor: pointer;
+  }
+  .toolbar button.active { background: var(--accent-bg); color: var(--accent-dark); border-color: var(--accent-bg); }
+
+  table { width: 100%; border-collapse: collapse; background: var(--card); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+  thead th {
+    text-align: left; font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.04em;
+    color: var(--muted); padding: 0.7rem 0.9rem; border-bottom: 1px solid var(--border); white-space: nowrap;
+  }
+  tbody td { padding: 0.6rem 0.9rem; font-size: 0.86rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: var(--bg); }
+  .pill { display: inline-block; padding: 0.15rem 0.6rem; border-radius: 999px; font-size: 0.76rem; font-weight: 700; }
+  .pill-collected { background: var(--success-bg); color: var(--success); }
+  .pill-vanished { background: var(--warn-bg); color: var(--warn); }
+  .muted { color: var(--muted); }
+  .mono { font-family: "SF Mono", Consolas, monospace; font-size: 0.78rem; }
+  tbody a { color: var(--accent-dark); text-decoration: none; font-weight: 600; }
+  tbody a:hover { text-decoration: underline; }
+  .empty { text-align: center; color: var(--muted); padding: 3rem 1rem; }
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <div>
+      <h1>Отчёт по документам дела</h1>
+      <p>Папка: {{ output_dir or "не выбрана" }}</p>
+    </div>
+    {% if rows is not none %}
+    <a class="btn" href="/report/export.xlsx?output_dir={{ output_dir | urlencode }}">Скачать как Excel</a>
+    {% endif %}
+  </header>
+
+  {% if rows is none %}
+    <div class="empty">Папка с результатами не найдена — сначала выбери её на главной странице.</div>
+  {% else %}
+    {% set vanished_count = rows | selectattr("category", "equalto", "Пропал") | list | length %}
+    {% set converted_count = rows | selectattr("md_status", "equalto", "Сконвертирован") | list | length %}
+    <div class="summary">
+      <div class="stat"><div class="label">Всего документов</div><div class="value">{{ rows | length }}</div></div>
+      <div class="stat"><div class="label">Собрано</div><div class="value">{{ rows | length - vanished_count }}</div></div>
+      <div class="stat"><div class="label">Пропало</div><div class="value">{{ vanished_count }}</div></div>
+      <div class="stat"><div class="label">Сконвертировано в MD</div><div class="value">{{ converted_count }} / {{ rows | length }}</div></div>
+    </div>
+
+    <div class="toolbar">
+      <input type="text" id="filterInput" placeholder="Поиск по названию...">
+      <button class="active" data-filter="all">Все</button>
+      <button data-filter="Собран">Собранные</button>
+      <button data-filter="Пропал">Пропавшие</button>
+    </div>
+
+    <table id="reportTable">
+      <thead>
+        <tr>
+          <th>Категория</th>
+          <th>Документ</th>
+          <th>id на сайте</th>
+          <th>Ссылка</th>
+          <th>MD</th>
+          <th>Конвертирован</th>
+          <th>Последняя сверка</th>
+          <th>Скачан</th>
+          <th>Исчез</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+        <tr data-category="{{ row.category }}">
+          <td>
+            {% if row.category == "Пропал" %}
+              <span class="pill pill-vanished">Пропал</span>
+            {% else %}
+              <span class="pill pill-collected">Собран</span>
+            {% endif %}
+          </td>
+          <td>{{ row.title }}</td>
+          <td class="muted mono">{{ row.doc_id }}</td>
+          <td>
+            {% if row.url %}
+              <a href="{{ row.url }}" target="_blank" rel="noopener">открыть</a>
+            {% else %}
+              <span class="muted">—</span>
+            {% endif %}
+          </td>
+          <td>{{ row.md_status }}</td>
+          <td class="muted">{{ row.converted_at or "—" }}</td>
+          <td class="muted">{{ row.last_verified_at or "—" }}</td>
+          <td class="muted">{{ row.downloaded_at or "—" }}</td>
+          <td class="muted">{{ row.vanished_at or "—" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+</div>
+
+<script>
+const filterInput = document.getElementById("filterInput");
+const rows = document.querySelectorAll("#reportTable tbody tr");
+const buttons = document.querySelectorAll(".toolbar button[data-filter]");
+let activeCategory = "all";
+
+function applyFilters() {
+  const q = (filterInput ? filterInput.value : "").trim().toLowerCase();
+  rows.forEach((tr) => {
+    const matchesCategory = activeCategory === "all" || tr.dataset.category === activeCategory;
+    const matchesText = !q || tr.textContent.toLowerCase().includes(q);
+    tr.style.display = (matchesCategory && matchesText) ? "" : "none";
+  });
+}
+
+if (filterInput) filterInput.oninput = applyFilters;
+buttons.forEach((btn) => {
+  btn.onclick = () => {
+    buttons.forEach((b) => b.classList.remove("active"));
+    btn.classList.add("active");
+    activeCategory = btn.dataset.filter;
+    applyFilters();
+  };
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,644 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Скачивание дела с kad.arbitr.ru</title>
+<style>
+  :root {
+    --bg: #f3f4f8;
+    --card: #ffffff;
+    --border: #e4e6ef;
+    --text: #1f2430;
+    --muted: #6b7280;
+    --accent: #4654d6;
+    --accent-dark: #3a46b8;
+    --accent-bg: #eef0fc;
+    --danger: #d64550;
+    --danger-dark: #b8373f;
+    --success: #1f9d55;
+    --warn: #c98a12;
+    --warn-bg: rgba(201,138,18,0.1);
+    --mono-bg: #161922;
+    --mono-text: #d7dbe8;
+    --radius: 12px;
+    --shadow: 0 1px 2px rgba(20,20,43,0.04), 0 4px 16px rgba(20,20,43,0.06);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14161f;
+      --card: #1c1f2b;
+      --border: #2a2e3d;
+      --text: #e7e9f3;
+      --muted: #9299ab;
+      --accent: #7c88f0;
+      --accent-dark: #93a0ff;
+      --accent-bg: #242a46;
+      --danger: #e2727a;
+      --danger-dark: #ef8c93;
+      --success: #43c47b;
+      --warn: #e0a83f;
+      --warn-bg: rgba(224,168,63,0.14);
+      --mono-bg: #0d0f16;
+      --mono-text: #c9cde0;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 6px 20px rgba(0,0,0,0.35);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html, body { width: 100%; }
+  body {
+    font-family: -apple-system, "Segoe UI", system-ui, Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    margin: 0;
+    padding: 2rem clamp(1rem, 3vw, 2.5rem) 4rem;
+  }
+  .page { max-width: 1280px; margin: 0 auto; }
+
+  header { margin-bottom: 1.5rem; }
+  header h1 { font-size: 1.5rem; margin: 0 0 0.25rem; }
+  header p { margin: 0; color: var(--muted); font-size: 0.92rem; }
+
+  .layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.25rem; align-items: start; }
+  @media (min-width: 980px) {
+    .layout { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); }
+  }
+  .col { display: flex; flex-direction: column; min-width: 0; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 1.25rem 1.4rem;
+    margin-bottom: 1.25rem;
+  }
+  .card h2 {
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    margin: 0 0 1rem;
+  }
+
+  label { display: block; font-weight: 600; font-size: 0.88rem; margin-top: 1rem; }
+  label:first-of-type { margin-top: 0; }
+  .hint { color: var(--muted); font-weight: 400; font-size: 0.8rem; }
+
+  input[type=text] {
+    width: 100%;
+    padding: 0.55rem 0.7rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 0.92rem;
+    margin-top: 0.4rem;
+  }
+  input[type=text]:focus { outline: none; border-color: var(--accent); }
+
+  input[type=range] { width: 100%; margin-top: 0.5rem; accent-color: var(--accent); }
+  input[type=range]:disabled { opacity: 0.4; }
+
+  .field-row { display: flex; gap: 0.5rem; margin-top: 0.4rem; }
+  .field-row input[type=text] { margin-top: 0; }
+
+  .check-row { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.85rem; }
+  .check-row label { margin: 0; font-weight: 400; font-size: 0.9rem; }
+  .check-row input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--accent); }
+
+  button {
+    font-size: 0.88rem;
+    font-weight: 600;
+    padding: 0.55rem 1rem;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: filter 0.12s ease, opacity 0.12s ease;
+  }
+  button:hover { filter: brightness(1.05); }
+  button:active { filter: brightness(0.95); }
+  button:disabled { opacity: 0.45; cursor: not-allowed; filter: none; }
+
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { background: var(--accent-dark); }
+  .btn-secondary { background: var(--accent-bg); color: var(--accent-dark); border-color: var(--accent-bg); }
+  .btn-warn { background: var(--warn-bg); color: var(--warn); border-color: var(--warn-bg); }
+  .btn-ghost { background: transparent; color: var(--text); border-color: var(--border); }
+  .btn-danger { background: var(--danger); color: white; }
+  .btn-danger:hover { background: var(--danger-dark); }
+
+  .actions { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+
+  .actions-bar { display: flex; flex-wrap: wrap; gap: 0.75rem; justify-content: space-between; }
+  .actions-group { display: flex; flex-wrap: wrap; gap: 0.6rem; align-content: flex-start; }
+  @media (max-width: 560px) {
+    .actions-bar { flex-direction: column; }
+    .actions-group { width: 100%; }
+    .actions-group button { flex: 1 1 auto; }
+  }
+
+  .missing-pages {
+    margin-top: 0.85rem; font-size: 0.82rem; color: var(--warn);
+    background: var(--warn-bg); border-radius: 8px; padding: 0.6rem 0.8rem;
+    display: none;
+  }
+  .missing-pages strong { font-weight: 700; }
+
+  .status-banner {
+    display: flex; align-items: center; gap: 0.9rem;
+    border-radius: 10px; padding: 0.9rem 1.1rem; margin-bottom: 1.1rem;
+    background: var(--border); border: 1px solid var(--border);
+  }
+  .status-banner.busy { background: var(--accent-bg); border-color: var(--accent); }
+  .status-banner.done { background: rgba(31,157,85,0.14); border-color: var(--success); }
+  .status-banner.stopped { background: var(--warn-bg); border-color: var(--warn); }
+  .status-banner.error { background: rgba(214,69,80,0.14); border-color: var(--danger); }
+  .status-banner .dot {
+    width: 13px; height: 13px; border-radius: 50%; flex: none;
+    background: var(--muted);
+  }
+  .status-banner.busy .dot { background: var(--accent-dark); animation: pulse 1.1s ease-in-out infinite; }
+  .status-banner.done .dot { background: var(--success); }
+  .status-banner.stopped .dot { background: var(--warn); }
+  .status-banner.error .dot { background: var(--danger); }
+  .status-banner .text { min-width: 0; flex: 1; }
+  .status-banner .phase-line {
+    font-size: 1.15rem; font-weight: 700; line-height: 1.3;
+  }
+  .status-banner.busy .phase-line { color: var(--accent-dark); }
+  .status-banner.done .phase-line { color: var(--success); }
+  .status-banner.stopped .phase-line { color: var(--warn); }
+  .status-banner.error .phase-line { color: var(--danger); }
+  .status-banner .action-line {
+    font-size: 0.88rem; color: var(--muted); margin-top: 0.2rem;
+  }
+  .status-banner .elapsed { font-size: 0.82rem; color: var(--muted); flex: none; white-space: nowrap; }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
+
+  .stat-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.75rem; margin-bottom: 1rem;
+  }
+  .stat {
+    background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
+    padding: 0.65rem 0.8rem;
+  }
+  .stat .label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  .stat .value { font-size: 1.1rem; font-weight: 700; margin-top: 0.15rem; }
+  .stat .value small { font-size: 0.7rem; font-weight: 500; color: var(--muted); }
+
+  .progress-track {
+    height: 7px; border-radius: 999px; background: var(--border);
+    overflow: hidden; margin-top: 0.35rem;
+  }
+  .progress-fill { height: 100%; background: var(--accent); width: 0%; transition: width 0.3s ease; border-radius: 999px; }
+  .progress-label { display: flex; justify-content: space-between; font-size: 0.78rem; color: var(--muted); margin-top: 0.3rem; }
+
+  .browser-notice {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+    gap: 0.6rem; font-size: 0.82rem; color: var(--muted);
+    background: transparent; border: 1px dashed var(--border); border-radius: 10px;
+    padding: 0.55rem 0.6rem 0.55rem 0.9rem; margin-bottom: 1.25rem;
+  }
+  .browser-notice a.btn-ghost {
+    display: inline-flex; align-items: center; text-decoration: none;
+    padding: 0.4rem 0.8rem; border-radius: 8px; font-weight: 600; font-size: 0.82rem;
+    white-space: nowrap;
+  }
+
+  #log {
+    margin-top: 0; background: var(--mono-bg); color: var(--mono-text);
+    font-family: "SF Mono", Consolas, monospace; font-size: 0.76rem;
+    padding: 0.85rem; height: 260px; overflow-y: auto; white-space: pre-wrap;
+    border-radius: 10px; line-height: 1.45;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <h1>Скачивание дела с kad.arbitr.ru</h1>
+    <p>Разведка, скачивание «Электронного дела» и конвертация в Markdown</p>
+  </header>
+
+  <div class="browser-notice">
+    <span>Для работы инструмента на компьютере должен быть установлен браузер Google Chrome.</span>
+    <a class="btn-ghost" href="https://www.google.com/intl/ru/chrome" target="_blank" rel="noopener">Скачать Chrome</a>
+  </div>
+
+  <div class="layout">
+    <div class="col">
+
+      <div class="card">
+        <h2>Дело и папка</h2>
+
+        <label for="outputDir">Папка для сохранения</label>
+        <div class="field-row">
+          <input type="text" id="outputDir" placeholder="C:\путь\к\папке" value="{{ state.output_dir }}">
+          <button id="pickFolderBtn" class="btn-ghost">Выбрать папку...</button>
+        </div>
+        <p class="hint" style="margin-top: 0.35rem;">
+          Все параметры (ссылка, темп, диапазон страниц и т.д.) хранятся прямо в этой папке —
+          выбери уже использованную папку, и они подтянутся сами; для новой папки заведутся с нуля.
+        </p>
+
+        <label for="caseUrl">Ссылка на дело</label>
+        <input type="text" id="caseUrl" placeholder="https://kad.arbitr.ru/Card/..." value="{{ state.case_url }}">
+
+        <!-- headless пока не работает с этим сайтом — скрыто из UI, но не удалено:
+             может пригодиться, если разберёмся, почему антибот-защита иначе себя ведёт
+             в headless-режиме. -->
+        <div class="check-row" style="display: none;">
+          <input type="checkbox" id="headless">
+          <label for="headless">Запускать браузер в фоне (headless)</label>
+        </div>
+        <div class="check-row">
+          <input type="checkbox" id="convertMd" {{ "checked" if state.convert_to_md }}>
+          <label for="convertMd">Конвертировать PDF в Markdown после скачивания</label>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Темп и диапазон страниц</h2>
+
+        <label for="rateSlider">Темп скачивания: <span id="rateValue"></span> документов/мин</label>
+        <input type="range" id="rateSlider" min="{{ min_rate }}" max="{{ max_rate }}" step="1"
+               value="{{ state.rate_per_min or max_rate }}">
+
+        <div class="actions" style="margin-top: 1rem;">
+          <button id="discoverBtn" class="btn-secondary">Разведать (страницы + инфо о деле)</button>
+        </div>
+        <p class="hint" id="discoverResult" style="margin-top: 0.5rem;"></p>
+
+        <label for="fromPageSlider">Страницы для скачивания: с <span id="fromPageValue">1</span> по <span id="toPageValue">1</span></label>
+        <input type="range" id="fromPageSlider" min="1" max="{{ state.discovered_total_pages or 1 }}" step="1"
+               value="{{ state.from_page or 1 }}" {{ "disabled" if not state.discovered_total_pages }}>
+        <input type="range" id="toPageSlider" min="1" max="{{ state.discovered_total_pages or 1 }}" step="1"
+               value="{{ state.to_page or state.discovered_total_pages or 1 }}" {{ "disabled" if not state.discovered_total_pages }}>
+      </div>
+
+      <div class="card">
+        <h2>Действия</h2>
+        <div class="actions-bar">
+          <div class="actions-group">
+            <button id="startBtn" class="btn-primary">Начать</button>
+            <button id="convertBtn" class="btn-secondary">Только PDF→MD</button>
+          </div>
+          <div class="actions-group">
+            <button id="stopBtn" class="btn-danger">Стоп</button>
+            <button id="newCollectionBtn" class="btn-ghost">Начать новый сбор</button>
+            <button id="reportBtn" class="btn-ghost">Таблица по документам</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Актуализация</h2>
+        <p class="hint" style="margin-top: -0.5rem;">
+          Дело живое — в него постоянно подшивают новые документы. Актуализация обходит все
+          страницы, сравнивает их со списком уже собранных документов и, если включена докачка,
+          сразу докачивает то, чего не хватает.
+        </p>
+        <div class="check-row">
+          <input type="checkbox" id="actualizeDownloadMissing" checked>
+          <label for="actualizeDownloadMissing">Докачать то, чего не хватает</label>
+        </div>
+        <div class="actions" style="margin-top: 1rem;">
+          <button id="actualizeBtn" class="btn-secondary">Актуализировать</button>
+        </div>
+        <div class="missing-pages" id="missingPagesBox"></div>
+      </div>
+
+    </div>
+    <div class="col">
+
+      <div class="card">
+        <div class="status-banner" id="statusBanner">
+          <span class="dot"></span>
+          <div class="text">
+            <div class="phase-line" id="phase">Не запущено</div>
+            <div class="action-line" id="actionLine">Выбери дело и нажми «Начать» или «Актуализировать».</div>
+          </div>
+          <span class="elapsed">прошло: <span id="elapsed">0</span> сек</span>
+        </div>
+
+        <div class="progress-label">
+          <span>Страница <span id="page">-</span> / <span id="totalPages">-</span></span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" id="pageProgressFill"></div></div>
+
+        <div class="stat-grid" style="margin-top: 1.1rem;">
+          <div class="stat">
+            <div class="label">PDF скачано</div>
+            <div class="value"><span id="downloaded">0</span></div>
+          </div>
+          <div class="stat">
+            <div class="label">PDF пропущено</div>
+            <div class="value"><span id="skipped">0</span></div>
+          </div>
+          <div class="stat">
+            <div class="label">PDF не удалось</div>
+            <div class="value"><span id="failed">0</span></div>
+          </div>
+          <div class="stat">
+            <div class="label">MD сконвертировано</div>
+            <div class="value"><span id="mdConverted">0</span> <small>/ <span id="mdTotal">0</span></small></div>
+          </div>
+          <div class="stat">
+            <div class="label">MD пропущено / ошибок</div>
+            <div class="value"><span id="mdSkipped">0</span> <small>/ <span id="mdFailed">0</span></small></div>
+          </div>
+          <div class="stat">
+            <div class="label">Проверка: сайт / папка</div>
+            <div class="value"><span id="expectedDocs">-</span> <small>/ <span id="actualDocs">-</span></small></div>
+          </div>
+        </div>
+
+        <div class="progress-label" style="margin-top: 0.1rem;">
+          <span>MD: <span id="mdProcessed">0</span> / <span id="mdTotalDup">0</span></span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" id="mdProgressFill"></div></div>
+      </div>
+
+      <div class="card">
+        <h2>Журнал</h2>
+        <div id="log"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+
+async function post(url, body) {
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body || {}),
+  });
+  const data = await res.json();
+  if (!data.ok) alert(data.error);
+  return data;
+}
+
+$("rateValue").textContent = $("rateSlider").value;
+$("rateSlider").oninput = () => { $("rateValue").textContent = $("rateSlider").value; };
+
+let discoveredPages = {{ state.discovered_total_pages or "null" }};
+$("fromPageValue").textContent = $("fromPageSlider").value;
+$("toPageValue").textContent = $("toPageSlider").value;
+if (discoveredPages) {
+  $("discoverResult").textContent = `найдено страниц: ${discoveredPages}`;
+}
+
+function applyDiscoveredPages(n) {
+  discoveredPages = n;
+  for (const id of ["fromPageSlider", "toPageSlider"]) {
+    $(id).min = 1;
+    $(id).max = n;
+    $(id).disabled = false;
+  }
+  $("fromPageSlider").value = 1;
+  $("toPageSlider").value = n;
+  $("fromPageValue").textContent = 1;
+  $("toPageValue").textContent = n;
+}
+
+$("fromPageSlider").oninput = () => {
+  let from = Number($("fromPageSlider").value);
+  let to = Number($("toPageSlider").value);
+  if (from > to) { $("toPageSlider").value = from; to = from; }
+  $("fromPageValue").textContent = from;
+  $("toPageValue").textContent = to;
+};
+$("toPageSlider").oninput = () => {
+  let from = Number($("fromPageSlider").value);
+  let to = Number($("toPageSlider").value);
+  if (to < from) { $("fromPageSlider").value = to; from = to; }
+  $("fromPageValue").textContent = from;
+  $("toPageValue").textContent = to;
+};
+
+function applyLoadedState(state) {
+  state = state || {};
+  $("caseUrl").value = state.case_url || "";
+  $("convertMd").checked = state.convert_to_md !== false;
+  $("rateSlider").value = state.rate_per_min || $("rateSlider").max;
+  $("rateValue").textContent = $("rateSlider").value;
+
+  if (state.discovered_total_pages) {
+    applyDiscoveredPages(state.discovered_total_pages);
+    if (state.from_page) {
+      $("fromPageSlider").value = state.from_page;
+      $("fromPageValue").textContent = state.from_page;
+    }
+    if (state.to_page) {
+      $("toPageSlider").value = state.to_page;
+      $("toPageValue").textContent = state.to_page;
+    }
+    $("discoverResult").textContent = `найдено страниц: ${state.discovered_total_pages}`;
+  } else {
+    discoveredPages = null;
+    for (const id of ["fromPageSlider", "toPageSlider"]) {
+      $(id).min = 1;
+      $(id).max = 1;
+      $(id).value = 1;
+      $(id).disabled = true;
+    }
+    $("fromPageValue").textContent = 1;
+    $("toPageValue").textContent = 1;
+    $("discoverResult").textContent = "";
+  }
+
+  lastMissingPagesJson = JSON.stringify(state.missing_pages || []);
+  applyMissingPages(state.missing_pages || []);
+}
+
+function applyMissingPages(missingPages) {
+  const box = $("missingPagesBox");
+  const n = (missingPages || []).length;
+  if (n === 0) {
+    box.style.display = "none";
+  } else {
+    const totalMissing = missingPages.reduce((sum, m) => sum + m.missing, 0);
+    const pagesStr = missingPages.map(m => `${m.page} (-${m.missing})`).join(", ");
+    box.innerHTML = `<strong>${n}</strong> страниц(ы) с пропусками, всего не хватает <strong>${totalMissing}</strong> документов: ${pagesStr}`;
+    box.style.display = "block";
+  }
+}
+applyMissingPages({{ (state.missing_pages or []) | tojson }});
+
+$("discoverBtn").onclick = () => post("/discover", {
+  case_url: $("caseUrl").value,
+  output_dir: $("outputDir").value,
+  headless: $("headless").checked,
+});
+
+$("startBtn").onclick = () => post("/start", {
+  case_url: $("caseUrl").value,
+  output_dir: $("outputDir").value,
+  headless: $("headless").checked,
+  convert_to_md: $("convertMd").checked,
+  rate_per_min: Number($("rateSlider").value),
+  from_page: discoveredPages ? Number($("fromPageSlider").value) : null,
+  to_page: discoveredPages ? Number($("toPageSlider").value) : null,
+});
+
+$("convertBtn").onclick = () => post("/convert", {
+  output_dir: $("outputDir").value,
+});
+
+$("actualizeBtn").onclick = () => post("/actualize", {
+  case_url: $("caseUrl").value,
+  output_dir: $("outputDir").value,
+  headless: $("headless").checked,
+  download_missing: $("actualizeDownloadMissing").checked,
+  convert_to_md: $("convertMd").checked,
+  rate_per_min: Number($("rateSlider").value),
+});
+
+$("stopBtn").onclick = () => post("/stop");
+
+$("reportBtn").onclick = () => {
+  const outputDir = encodeURIComponent($("outputDir").value || "");
+  window.open(`/report?output_dir=${outputDir}`, "_blank");
+};
+
+$("pickFolderBtn").onclick = async () => {
+  const res = await fetch("/pick_folder");
+  const data = await res.json();
+  if (data.ok && data.path) {
+    $("outputDir").value = data.path.replace(/\//g, "\\");
+    applyLoadedState(data.state);
+  }
+};
+
+$("outputDir").onchange = async () => {
+  const dir = $("outputDir").value.trim();
+  if (!dir) return;
+  const data = await post("/folder_state", { output_dir: dir });
+  if (data.ok) applyLoadedState(data.state);
+};
+
+$("newCollectionBtn").onclick = async () => {
+  await post("/reset_state", { output_dir: $("outputDir").value });
+  $("caseUrl").value = "";
+  $("outputDir").value = "";
+  $("headless").checked = false;
+  $("convertMd").checked = true;
+  $("actualizeDownloadMissing").checked = true;
+  $("rateSlider").value = $("rateSlider").max;
+  $("rateValue").textContent = $("rateSlider").value;
+  discoveredPages = null;
+  for (const id of ["fromPageSlider", "toPageSlider"]) {
+    $(id).min = 1;
+    $(id).max = 1;
+    $(id).value = 1;
+    $(id).disabled = true;
+  }
+  $("fromPageValue").textContent = 1;
+  $("toPageValue").textContent = 1;
+  $("discoverResult").textContent = "";
+  applyMissingPages([]);
+};
+
+const PHASE_LABELS = {
+  idle: "Не запущено",
+  downloading: "Скачивание",
+  converting: "Конвертация в Markdown",
+  checking: "Актуализация",
+  discovering: "Разведка",
+  done: "Готово",
+  stopped: "Остановлено",
+  error: "Ошибка",
+};
+const BUSY_PHASES = new Set(["downloading", "converting", "checking", "discovering"]);
+
+function buildActionLine(s) {
+  if (s.phase === "error") return s.message || "Смотри журнал ниже.";
+  if (s.phase === "idle") return "Выбери дело и нажми «Начать» или «Актуализировать».";
+  if (s.phase === "discovering") return "Узнаю, сколько страниц в «Электронном деле»...";
+  if (s.phase === "converting") {
+    return `Документ ${s.md_processed} из ${s.md_total} — сконвертировано ${s.md_converted}, пропущено ${s.md_skipped}, ошибок ${s.md_failed}.`;
+  }
+  if (s.phase === "downloading" || s.phase === "checking") {
+    const pageStr = s.total_pages ? `страница ${s.page} из ${s.total_pages}` : `страница ${s.page}`;
+    let line = `${pageStr} — скачано ${s.downloaded}, пропущено ${s.skipped}, ошибок ${s.failed}`;
+    if (s.phase === "checking" && s.expected_docs !== null) {
+      line += `; на сайте ${s.expected_docs}, в папке ${s.actual_docs}`;
+    }
+    return line + ".";
+  }
+  if (s.phase === "done") {
+    return `Скачано ${s.downloaded}, пропущено ${s.skipped}, ошибок ${s.failed}; MD: ${s.md_converted}/${s.md_total}.`;
+  }
+  if (s.phase === "stopped") return "Остановлено пользователем — можно продолжить позже той же кнопкой.";
+  return "";
+}
+
+let lastMissingPagesJson = JSON.stringify({{ (state.missing_pages or []) | tojson }});
+
+async function poll() {
+  try {
+    const res = await fetch("/status");
+    const s = await res.json();
+
+    $("phase").textContent = PHASE_LABELS[s.phase] || s.phase;
+    $("actionLine").textContent = buildActionLine(s);
+    const banner = $("statusBanner");
+    banner.className = "status-banner" +
+      (BUSY_PHASES.has(s.phase) ? " busy" : "") +
+      (s.phase === "done" ? " done" : "") +
+      (s.phase === "stopped" ? " stopped" : "") +
+      (s.phase === "error" ? " error" : "");
+
+    $("page").textContent = s.page;
+    $("totalPages").textContent = s.total_pages;
+    $("pageProgressFill").style.width = s.total_pages
+      ? `${Math.min(100, (s.page / s.total_pages) * 100)}%` : "0%";
+
+    $("downloaded").textContent = s.downloaded;
+    $("skipped").textContent = s.skipped;
+    $("failed").textContent = s.failed;
+    $("mdProcessed").textContent = s.md_processed;
+    $("mdTotal").textContent = s.md_total;
+    $("mdTotalDup").textContent = s.md_total;
+    $("mdConverted").textContent = s.md_converted;
+    $("mdSkipped").textContent = s.md_skipped;
+    $("mdFailed").textContent = s.md_failed;
+    $("mdProgressFill").style.width = s.md_total
+      ? `${Math.min(100, (s.md_processed / s.md_total) * 100)}%` : "0%";
+
+    $("expectedDocs").textContent = s.expected_docs === null ? "-" : s.expected_docs;
+    $("actualDocs").textContent = s.actual_docs === null ? "-" : s.actual_docs;
+    $("elapsed").textContent = s.elapsed_seconds;
+
+    if (s.discovered_total_pages !== null && s.discovered_total_pages !== discoveredPages) {
+      applyDiscoveredPages(s.discovered_total_pages);
+    }
+    $("discoverResult").textContent = s.discovered_total_pages !== null
+      ? `найдено страниц: ${s.discovered_total_pages}` : "";
+
+    const missingJson = JSON.stringify(s.missing_pages || []);
+    if (missingJson !== lastMissingPagesJson) {
+      lastMissingPagesJson = missingJson;
+      applyMissingPages(s.missing_pages || []);
+    }
+
+    const logEl = $("log");
+    logEl.textContent = s.log_tail.join("\n");
+    logEl.scrollTop = logEl.scrollHeight;
+  } catch (e) {
+    // server likely restarting; ignore and retry on next tick
+  }
+}
+
+setInterval(poll, 2000);
+poll();
+</script>
+</body>
+</html>
