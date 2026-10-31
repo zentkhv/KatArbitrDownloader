@@ -2,6 +2,7 @@ import datetime
 import json
 import logging
 import os
+import sys
 import threading
 import time
 from collections import deque
@@ -21,8 +22,15 @@ logging.getLogger("werkzeug").setLevel(logging.WARNING)
 # templates/ lives at src/templates (next to the main.py entry point, one
 # level up from this modules/ package), not relative to this file — so the
 # default template_folder (which Flask would otherwise resolve to
-# src/modules/templates) is pointed there explicitly.
-_TEMPLATES_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "templates")
+# src/modules/templates) is pointed there explicitly. Inside a PyInstaller
+# onefile .exe, this file's own __file__ doesn't point to a real path on
+# disk (the code lives packed inside the executable) — but `--add-data`
+# files do get extracted to a real temp directory at startup, exposed as
+# sys._MEIPASS, so that's used as the base instead whenever running frozen.
+if getattr(sys, "frozen", False):
+    _TEMPLATES_DIR = os.path.join(sys._MEIPASS, "templates")
+else:
+    _TEMPLATES_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "templates")
 app = Flask(__name__, template_folder=_TEMPLATES_DIR)
 
 _lock = threading.Lock()
